@@ -6,3 +6,6 @@
 *.webp binary
 *.woff binary
 *.woff2 binary
+
+node_modules/
+.DS_Store
