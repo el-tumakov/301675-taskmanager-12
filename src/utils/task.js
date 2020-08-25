@@ -32,3 +32,7 @@ export const isTaskRepeating = (repeating) => {
 export const humanizeTaskDueDate = (dueDate) => {
   return dueDate.toLocaleString(`en-US`, {day: `numeric`, month: `long`});
 };
+
+export const isDatesEqual = (dateA, dateB) => {
+  return dateA === dateB;
+};
