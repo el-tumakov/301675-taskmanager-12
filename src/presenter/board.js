@@ -4,14 +4,16 @@ import TaskListView from "../view/task-list.js";
 import LoadMoreButtonView from "../view/load-more-button.js";
 import TaskPresenter from "./task.js";
 import {render, RenderPosition, remove} from "../utils/render.js";
+import {filter} from "../utils/filter.js";
 import {UpdateType, UserAction} from "../const.js";
 
 
 const TASK_COUNT_PER_STEP = 8;
 
 export default class Board {
-  constructor(boardContainer, tasksModel) {
+  constructor(boardContainer, tasksModel, filterModel) {
     this._tasksModel = tasksModel;
+    this._filterModel = filterModel;
     this._boardContainer = boardContainer;
     this._renderedTaskCount = TASK_COUNT_PER_STEP;
     this._taskPresenter = {};
@@ -30,6 +32,7 @@ export default class Board {
     this._handleLoadMoreButtonClick = this._handleLoadMoreButtonClick.bind(this);
 
     this._tasksModel.addObserver(this._handleModelEvent);
+    this._filterModel.addObserver(this._handleModelEvent);
   }
 
   init() {
@@ -40,7 +43,11 @@ export default class Board {
   }
 
   _getTasks() {
-    return this._tasksModel.getTasks();
+    const filterType = this._filterModel.getFilter();
+    const tasks = this._tasksModel.getTasks();
+    const filtredTasks = filter[filterType](tasks);
+
+    return filtredTasks;
   }
 
   _handleModeChange() {
