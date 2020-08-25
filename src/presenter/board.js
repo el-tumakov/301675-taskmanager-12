@@ -16,6 +16,9 @@ export default class Board {
     this._renderedTaskCount = TASK_COUNT_PER_STEP;
     this._taskPresenter = {};
 
+    this._sortComponent = null;
+    this._loadMoreButtonComponent = null;
+
     this._boardComponent = new BoardView();
     this._sortComponent = new SortView();
     this._taskListComponent = new TaskListView();
@@ -66,8 +69,12 @@ export default class Board {
         this._taskPresenter[data.id].init(data);
         break;
       case UpdateType.MINOR:
+        this._clearBoard();
+        this._renderBoard();
         break;
       case UpdateType.MAJOR:
+        this._clearBoard({resetRenderedTaskCount: true, resetSortType: true});
+        this._renderBoard();
         break;
     }
   }
@@ -100,9 +107,14 @@ export default class Board {
   }
 
   _renderLoadMoreButton() {
-    render(this._boardComponent, this._loadMoreButtonComponent, RenderPosition.BEFOREEND);
+    if (this._loadMoreButtonComponent !== null) {
+      this._loadMoreButtonComponent = null;
+    }
 
+    this._loadMoreButtonComponent = new LoadMoreButtonView();
     this._loadMoreButtonComponent.setClickHandler(this._handleLoadMoreButtonClick);
+
+    render(this._boardComponent, this._loadMoreButtonComponent, RenderPosition.BEFOREEND);
   }
 
   _renderTaskList() {
@@ -116,8 +128,33 @@ export default class Board {
     }
   }
 
+  _clearBoard({resetRenderedTaskCount = false} = {}) {
+    const taskCount = this._getTasks().length;
+
+    Object
+      .values(this._taskPresenter)
+      .forEach((presenter) => presenter.destroy());
+    this._taskPresenter = {};
+
+    remove(this._sortComponent);
+    remove(this._loadMoreButtonComponent);
+
+    if (resetRenderedTaskCount) {
+      this._renderedTaskCount = TASK_COUNT_PER_STEP;
+    } else {
+      this._renderedTaskCount = Math.min(taskCount, this._renderedTaskCount);
+    }
+  }
+
   _renderBoard() {
+    const tasks = this._getTasks();
+    const taskCount = tasks.length;
+
     this._renderSort();
-    this._renderTaskList();
+    this._renderTasks(tasks.slice(0, Math.min(taskCount, this._renderedTaskCount)));
+
+    if (taskCount > this._renderedTaskCount) {
+      this._renderLoadMoreButton();
+    }
   }
 }
