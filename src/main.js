@@ -4,6 +4,7 @@ import FilterPresenter from "./presenter/filter.js";
 import TasksModel from "./model/tasks.js";
 import FilterModel from "./model/filter.js";
 import {render, RenderPosition} from "./utils/render.js";
+import {UpdateType} from "./const.js";
 import Api from "./api.js";
 
 const AUTHORIZATION = `Basic qC2gh6df5qrl1sa5p`;
@@ -32,6 +33,10 @@ document.querySelector(`#control__new-task`).addEventListener(`click`, (evt) => 
   boardPresenter.createTask();
 });
 
-api.getTasks().then((tasks) => {
-  tasksModel.setTasks(tasks);
-});
+api.getTasks()
+  .then((tasks) => {
+    tasksModel.setTasks(UpdateType.INIT, tasks);
+  })
+  .catch(() => {
+    tasksModel.setTasks(UpdateType.INIT, []);
+  });
