@@ -23,20 +23,27 @@ const siteMenuComponent = new SiteMenuView();
 const boardPresenter = new BoardPresenter(siteMainElement, tasksModel, filterModel);
 const filterPresenter = new FilterPresenter(siteMainElement, filterModel, tasksModel);
 
-render(siteHeaderElement, siteMenuComponent, RenderPosition.BEFOREEND);
-
 filterPresenter.init();
 boardPresenter.init();
-
-document.querySelector(`#control__new-task`).addEventListener(`click`, (evt) => {
-  evt.preventDefault();
-  boardPresenter.createTask();
-});
 
 api.getTasks()
   .then((tasks) => {
     tasksModel.setTasks(UpdateType.INIT, tasks);
+
+    render(siteHeaderElement, siteMenuComponent, RenderPosition.BEFOREEND);
+
+    document.querySelector(`#control__new-task`).addEventListener(`click`, (evt) => {
+      evt.preventDefault();
+      boardPresenter.createTask();
+    });
   })
   .catch(() => {
     tasksModel.setTasks(UpdateType.INIT, []);
+
+    render(siteHeaderElement, siteMenuComponent, RenderPosition.BEFOREEND);
+
+    document.querySelector(`#control__new-task`).addEventListener(`click`, (evt) => {
+      evt.preventDefault();
+      boardPresenter.createTask();
+    });
   });
