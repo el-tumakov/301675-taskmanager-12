@@ -1,6 +1,7 @@
 import BoardView from "../view/board.js";
 import SortView from "../view/sort.js";
 import TaskListView from "../view/task-list.js";
+import LoadingView from "../view/loading.js";
 import LoadMoreButtonView from "../view/load-more-button.js";
 import TaskPresenter from "./task.js";
 import TaskNewPresenter from "./task-new.js";
@@ -18,6 +19,7 @@ export default class Board {
     this._boardContainer = boardContainer;
     this._renderedTaskCount = TASK_COUNT_PER_STEP;
     this._taskPresenter = {};
+    this._isLoading = true;
 
     this._sortComponent = null;
     this._loadMoreButtonComponent = null;
@@ -25,6 +27,7 @@ export default class Board {
     this._boardComponent = new BoardView();
     this._sortComponent = new SortView();
     this._taskListComponent = new TaskListView();
+    this._loadingComponent = new LoadingView();
     this._loadMoreButtonComponent = new LoadMoreButtonView();
 
     this._handleViewAction = this._handleViewAction.bind(this);
@@ -92,11 +95,20 @@ export default class Board {
         this._clearBoard({resetRenderedTaskCount: true, resetSortType: true});
         this._renderBoard();
         break;
+      case UpdateType.INIT:
+        this._isLoading = false;
+        remove(this._loadingComponent);
+        this._renderBoard();
+        break;
     }
   }
 
   _renderSort() {
     render(this._boardComponent, this._sortComponent, RenderPosition.AFTERBEGIN);
+  }
+
+  _renderLoading() {
+    render(this._boardComponent, this._loadingComponent, RenderPosition.AFTERBEGIN);
   }
 
   _renderTask(task) {
@@ -143,6 +155,7 @@ export default class Board {
     this._taskPresenter = {};
 
     remove(this._sortComponent);
+    remove(this._loadingComponent);
     remove(this._loadMoreButtonComponent);
 
     if (resetRenderedTaskCount) {
@@ -153,6 +166,11 @@ export default class Board {
   }
 
   _renderBoard() {
+    if (this._isLoading) {
+      this._renderLoading();
+      return;
+    }
+
     const tasks = this._getTasks();
     const taskCount = tasks.length;
 
