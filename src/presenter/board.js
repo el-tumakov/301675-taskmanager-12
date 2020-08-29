@@ -13,13 +13,14 @@ import {UpdateType, UserAction, FilterType} from "../const.js";
 const TASK_COUNT_PER_STEP = 8;
 
 export default class Board {
-  constructor(boardContainer, tasksModel, filterModel) {
+  constructor(boardContainer, tasksModel, filterModel, api) {
     this._tasksModel = tasksModel;
     this._filterModel = filterModel;
     this._boardContainer = boardContainer;
     this._renderedTaskCount = TASK_COUNT_PER_STEP;
     this._taskPresenter = {};
     this._isLoading = true;
+    this._api = api;
 
     this._sortComponent = null;
     this._loadMoreButtonComponent = null;
@@ -71,7 +72,9 @@ export default class Board {
   _handleViewAction(actionType, updateType, update) {
     switch (actionType) {
       case UserAction.UPDATE_TASK:
-        this._tasksModel.updateTask(updateType, update);
+        this._api.updateTask(update).then((response) => {
+          this._tasksModel.updateTask(updateType, response);
+        });
         break;
       case UserAction.ADD_TASK:
         this._tasksModel.addTask(updateType, update);
