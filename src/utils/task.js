@@ -36,3 +36,5 @@ export const humanizeTaskDueDate = (dueDate) => {
 export const isDatesEqual = (dateA, dateB) => {
   return dateA === dateB;
 };
+
+export const generateId = () => Date.now() + parseInt(Math.random() * 10000, 10);
