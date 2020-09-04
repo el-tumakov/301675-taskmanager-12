@@ -2,6 +2,7 @@ import BoardView from "../view/board.js";
 import SortView from "../view/sort.js";
 import TaskListView from "../view/task-list.js";
 import LoadingView from "../view/loading.js";
+import NoTaskView from "../view/no-task.js";
 import LoadMoreButtonView from "../view/load-more-button.js";
 import TaskPresenter from "./task.js";
 import TaskNewPresenter from "./task-new.js";
@@ -28,6 +29,7 @@ export default class Board {
     this._boardComponent = new BoardView();
     this._sortComponent = new SortView();
     this._taskListComponent = new TaskListView();
+    this._noTaskComponent = new NoTaskView();
     this._loadingComponent = new LoadingView();
     this._loadMoreButtonComponent = new LoadMoreButtonView();
 
@@ -114,6 +116,10 @@ export default class Board {
     render(this._boardComponent, this._loadingComponent, RenderPosition.AFTERBEGIN);
   }
 
+  _renderNoTasks() {
+    render(this._boardComponent, this._noTaskComponent, RenderPosition.AFTERBEGIN);
+  }
+
   _renderTask(task) {
     const taskPresenter = new TaskPresenter(this._taskListComponent, this._handleViewAction, this._handleModeChange);
     taskPresenter.init(task);
@@ -158,6 +164,7 @@ export default class Board {
     this._taskPresenter = {};
 
     remove(this._sortComponent);
+    remove(this._noTaskComponent);
     remove(this._loadingComponent);
     remove(this._loadMoreButtonComponent);
 
@@ -176,6 +183,11 @@ export default class Board {
 
     const tasks = this._getTasks();
     const taskCount = tasks.length;
+
+    if (taskCount === 0) {
+      this._renderNoTasks();
+      return;
+    }
 
     this._renderSort();
     this._renderTasks(tasks.slice(0, Math.min(taskCount, this._renderedTaskCount)));
