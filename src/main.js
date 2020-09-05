@@ -1,10 +1,11 @@
 import SiteMenuView from "./view/site-menu.js";
+import StatisticsView from "./view/statistics.js";
 import BoardPresenter from "./presenter/board.js";
 import FilterPresenter from "./presenter/filter.js";
 import TasksModel from "./model/tasks.js";
 import FilterModel from "./model/filter.js";
-import {render, RenderPosition} from "./utils/render.js";
-import {UpdateType} from "./const.js";
+import {render, RenderPosition, remove} from "./utils/render.js";
+import {UpdateType, MenuItem, FilterType} from "./const.js";
 import Api from "./api.js";
 
 const AUTHORIZATION = `Basic qC2gh6df5qrl1sa5p`;
@@ -23,27 +24,46 @@ const siteMenuComponent = new SiteMenuView();
 const boardPresenter = new BoardPresenter(siteMainElement, tasksModel, filterModel, api);
 const filterPresenter = new FilterPresenter(siteMainElement, filterModel, tasksModel);
 
+const handleTaskNewFormClose = () => {
+  siteMenuComponent.getElement().querySelector(`[value=${MenuItem.TASKS}]`).disabled = false;
+  siteMenuComponent.setMenuItem(MenuItem.TASKS);
+};
+
+let statisticsComponent = null;
+
+const handleSiteMenuClick = (menuItem) => {
+  switch (menuItem) {
+    case MenuItem.ADD_NEW_TASK:
+      remove(statisticsComponent);
+      boardPresenter.destroy();
+      filterModel.setFilter(UpdateType.MAJOR, FilterType.ALL);
+      boardPresenter.init();
+      boardPresenter.createTask(handleTaskNewFormClose);
+      siteMenuComponent.getElement().querySelector(`[value=${MenuItem.TASKS}]`).disabled = true;
+      break;
+    case MenuItem.TASKS:
+      boardPresenter.init();
+      remove(statisticsComponent);
+      break;
+    case MenuItem.STATISTICS:
+      boardPresenter.destroy();
+      statisticsComponent = new StatisticsView(tasksModel.getTasks());
+      render(siteMainElement, statisticsComponent, RenderPosition.BEFOREEND);
+      break;
+  }
+};
+
 filterPresenter.init();
 boardPresenter.init();
 
 api.getTasks()
   .then((tasks) => {
     tasksModel.setTasks(UpdateType.INIT, tasks);
-
     render(siteHeaderElement, siteMenuComponent, RenderPosition.BEFOREEND);
-
-    document.querySelector(`#control__new-task`).addEventListener(`click`, (evt) => {
-      evt.preventDefault();
-      boardPresenter.createTask();
-    });
+    siteMenuComponent.setMenuClickHandler(handleSiteMenuClick);
   })
   .catch(() => {
     tasksModel.setTasks(UpdateType.INIT, []);
-
     render(siteHeaderElement, siteMenuComponent, RenderPosition.BEFOREEND);
-
-    document.querySelector(`#control__new-task`).addEventListener(`click`, (evt) => {
-      evt.preventDefault();
-      boardPresenter.createTask();
-    });
+    siteMenuComponent.setMenuClickHandler(handleSiteMenuClick);
   });
