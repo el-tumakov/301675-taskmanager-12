@@ -9,6 +9,11 @@ const Mode = {
   EDITING: `EDITING`
 };
 
+export const State = {
+  SAVING: `SAVING`,
+  DELETING: `DELETING`
+};
+
 export default class Task {
   constructor(taskListContainer, changeData, changeMode) {
     this._taskListContainer = taskListContainer;
@@ -53,7 +58,8 @@ export default class Task {
     }
 
     if (this._mode === Mode.EDITING) {
-      replace(this._taskEditComponent, prevTaskEditComponent);
+      replace(this._taskComponent, prevTaskEditComponent);
+      this._mode = Mode.DEFAULT;
     }
 
     remove(prevTaskComponent);
@@ -68,6 +74,23 @@ export default class Task {
   resetView() {
     if (this._mode !== Mode.DEFAULT) {
       this._replaceFormToCard();
+    }
+  }
+
+  setViewState(state) {
+    switch (state) {
+      case State.SAVING:
+        this._taskEditComponent.updateData({
+          isDisabled: true,
+          isSaving: true
+        });
+        break;
+      case State.DELETING:
+        this._taskEditComponent.updateData({
+          isDisabled: true,
+          isDeleting: true
+        });
+        break;
     }
   }
 
@@ -88,7 +111,6 @@ export default class Task {
     if (evt.key === `Escape` || evt.key === `Esc`) {
       evt.preventDefault();
       this._taskEditComponent.reset(this._task);
-      this._replaceFormToCard();
     }
   }
 
